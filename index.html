@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoltTrack — Hours, job sites and AI plan reading for electrical contractors</title>
+<meta name="description" content="VoltTrack keeps your crew's hours, job sites and electrical plans in one app. Upload a plan and AI counts every light, receptacle and panel for you.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f5c400'/><path d='M18 4 8 18h7l-2 10 11-15h-7z' fill='%230d1526'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1526; --navy-2: #141d33; --navy-3: #1c2740; --line: #e6eaf3; --soft: #f4f6fb;
+    --volt: #f5c400; --volt-2: #ffd633; --ink: #0d1526; --muted: #5b6472; --subtle: #8a93a3; --green: #0f9d63;
+    --r: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--ink); background: #fff; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 12px; font-weight: 600; font-size: 15px; border: 1px solid transparent; cursor: pointer; transition: transform .15s, background .15s, box-shadow .15s; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-volt { background: var(--volt); color: var(--navy); box-shadow: 0 6px 20px rgba(245,196,0,.35); }
+  .btn-volt:hover { background: var(--volt-2); }
+  .btn-ghost { background: rgba(255,255,255,.06); color: #fff; border-color: rgba(255,255,255,.18); }
+  .btn-line { background: #fff; color: var(--ink); border-color: var(--line); }
+  .btn-sm { height: 40px; padding: 0 16px; font-size: 14px; }
+
+  /* nav */
+  nav { position: sticky; top: 0; z-index: 20; background: rgba(13,21,38,.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,.06); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .logo { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 800; font-size: 19px; letter-spacing: -.02em; }
+  .logo i { width: 32px; height: 32px; border-radius: 9px; background: var(--volt); display: grid; place-items: center; }
+  .links { display: flex; gap: 28px; color: #c9d0de; font-size: 14px; font-weight: 500; }
+  .links a:hover { color: #fff; }
+  .nav-cta { display: flex; gap: 10px; }
+
+  /* hero */
+  .hero { background: radial-gradient(1200px 500px at 70% -10%, rgba(245,196,0,.16), transparent 60%), linear-gradient(180deg, var(--navy), var(--navy-2)); color: #fff; padding: 84px 0 0; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(245,196,0,.12); color: var(--volt-2); font-size: 13px; font-weight: 600; border: 1px solid rgba(245,196,0,.25); }
+  h1 { font-size: 56px; line-height: 1.04; letter-spacing: -.035em; margin: 20px 0 18px; font-weight: 800; }
+  h1 em { font-style: normal; color: var(--volt); }
+  .lead { font-size: 19px; line-height: 1.55; color: #c9d0de; max-width: 520px; margin: 0 0 30px; }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .trust { margin-top: 22px; display: flex; gap: 20px; flex-wrap: wrap; color: #9aa5ba; font-size: 13.5px; }
+  .trust span::before { content: '✓'; color: var(--volt); margin-right: 6px; font-weight: 700; }
+
+  /* app mock */
+  .mock { position: relative; margin-bottom: -40px; }
+  .window { background: #fff; color: var(--ink); border-radius: 18px 18px 0 0; box-shadow: 0 40px 80px rgba(0,0,0,.45); overflow: hidden; border: 1px solid rgba(255,255,255,.1); }
+  .bar { height: 38px; background: #eef1f7; display: flex; align-items: center; gap: 6px; padding: 0 14px; }
+  .bar b { width: 10px; height: 10px; border-radius: 50%; background: #d3d9e6; }
+  .app { display: grid; grid-template-columns: 120px 1fr; min-height: 380px; }
+  .side { background: var(--navy); padding: 14px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .side div { height: 26px; border-radius: 7px; background: rgba(255,255,255,.07); }
+  .side div.on { background: var(--volt); }
+  .main { padding: 18px; background: var(--soft); }
+  .main h4 { margin: 0 0 4px; font-size: 15px; }
+  .main small { color: var(--muted); font-size: 11.5px; }
+  .tabs { display: flex; gap: 6px; margin: 12px 0; }
+  .tabs span { font-size: 11px; padding: 5px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--line); font-weight: 600; }
+  .tabs span.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .tile { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .tile b { display: block; font-size: 22px; letter-spacing: -.02em; }
+  .tile span { font-size: 10.5px; color: var(--muted); }
+  .rows { margin-top: 10px; display: grid; gap: 6px; }
+  .rows div { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 500; }
+  .rows div i { font-style: normal; color: var(--muted); }
+  .float { position: absolute; background: #fff; color: var(--ink); border-radius: 14px; padding: 12px 14px; box-shadow: 0 18px 40px rgba(0,0,0,.3); font-size: 13px; display: flex; gap: 10px; align-items: center; }
+  .float .dot { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 17px; }
+  .f1 { left: -34px; top: 120px; } .f2 { right: -18px; bottom: 26px; }
+  .float b { display: block; font-size: 14px; } .float small { color: var(--muted); }
+
+  /* sections */
+  section { padding: 104px 0; }
+  .kicker { color: #b08c00; font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+  h2 { font-size: 40px; line-height: 1.1; letter-spacing: -.03em; margin: 10px 0 14px; font-weight: 800; }
+  .sub { color: var(--muted); font-size: 18px; line-height: 1.55; max-width: 640px; margin: 0; }
+  .center { text-align: center; } .center .sub { margin: 0 auto; }
+
+  .logos { padding: 72px 0 0; color: var(--subtle); font-size: 14px; text-align: center; }
+
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; }
+  .feat { border: 1px solid var(--line); border-radius: var(--r); padding: 26px; background: #fff; transition: box-shadow .2s, transform .2s; }
+  .feat:hover { box-shadow: 0 14px 40px rgba(13,21,38,.08); transform: translateY(-2px); }
+  .ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(245,196,0,.16); display: grid; place-items: center; margin-bottom: 16px; }
+  .ico svg { width: 22px; height: 22px; stroke: #8a6d00; }
+  .feat h3 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.01em; }
+  .feat p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+  .feat.big { grid-column: span 2; background: linear-gradient(135deg, var(--navy), var(--navy-3)); color: #fff; border-color: transparent; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+  .feat.big p { color: #c9d0de; }
+  .feat.big .ico { background: rgba(245,196,0,.18); } .feat.big .ico svg { stroke: var(--volt); }
+  .count { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .count div { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px; }
+  .count b { font-size: 26px; display: block; color: var(--volt); }
+  .count span { font-size: 12px; color: #9aa5ba; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; counter-reset: s; }
+  .step { padding: 28px; border-radius: var(--r); background: var(--soft); position: relative; }
+  .step::before { counter-increment: s; content: counter(s); width: 34px; height: 34px; border-radius: 50%; background: var(--navy); color: var(--volt); display: grid; place-items: center; font-weight: 800; margin-bottom: 16px; }
+  .step h3 { margin: 0 0 8px; font-size: 18px; } .step p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+
+  /* pricing */
+  .pricing { background: var(--soft); }
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; align-items: stretch; }
+  .plan { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 30px; display: flex; flex-direction: column; position: relative; }
+  .plan.pop { border: 2px solid var(--volt); box-shadow: 0 24px 60px rgba(13,21,38,.12); transform: translateY(-8px); }
+  .tag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--volt); color: var(--navy); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; }
+  .plan h3 { margin: 0; font-size: 18px; } .plan .for { color: var(--muted); font-size: 14px; margin: 4px 0 18px; }
+  .price { font-size: 46px; font-weight: 800; letter-spacing: -.03em; } .price small { font-size: 16px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+  .reads { margin: 14px 0 20px; padding: 12px 14px; border-radius: 12px; background: rgba(245,196,0,.12); font-weight: 600; font-size: 15px; }
+  .plan ul { list-style: none; padding: 0; margin: 0 0 26px; display: grid; gap: 10px; flex: 1; }
+  .plan li { font-size: 14.5px; color: #333d4d; display: flex; gap: 10px; }
+  .plan li::before { content: '✓'; color: var(--green); font-weight: 700; }
+  .plan .btn { width: 100%; }
+  .fine { text-align: center; color: var(--muted); font-size: 14px; margin-top: 28px; }
+
+  /* faq */
+  .faq { max-width: 760px; margin: 44px auto 0; }
+  details { border-bottom: 1px solid var(--line); padding: 20px 0; }
+  summary { cursor: pointer; font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 20px; }
+  summary::after { content: '+'; font-size: 22px; color: var(--subtle); line-height: 1; }
+  details[open] summary::after { content: '–'; }
+  details p { color: var(--muted); line-height: 1.6; margin: 12px 0 0; }
+
+  .cta { background: linear-gradient(135deg, var(--navy), var(--navy-3)); color: #fff; border-radius: 24px; padding: 64px; text-align: center; position: relative; overflow: hidden; }
+  .cta::after { content: ''; position: absolute; inset: auto -100px -160px auto; width: 380px; height: 380px; background: radial-gradient(circle, rgba(245,196,0,.25), transparent 65%); }
+  .cta h2 { color: #fff; } .cta .sub { color: #c9d0de; margin: 0 auto 28px; }
+  .cta .hero-cta { justify-content: center; position: relative; z-index: 1; }
+
+  footer { padding: 40px 0 56px; color: var(--subtle); font-size: 14px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+  @media (max-width: 960px) {
+    h1 { font-size: 42px; } h2 { font-size: 32px; }
+    .hero-grid, .feat.big { grid-template-columns: 1fr; }
+    .features, .steps, .plans { grid-template-columns: 1fr; }
+    .feat.big { grid-column: auto; }
+    .plan.pop { transform: none; }
+    .links { display: none; }
+    .f1, .f2 { display: none; }
+    .tiles { grid-template-columns: repeat(3, 1fr); }
+    .cta { padding: 44px 24px; }
+    section { padding: 76px 0; }
+  }
+  @media (max-width: 520px) { .nav-cta .btn-ghost { display: none; } h1 { font-size: 36px; } .app { grid-template-columns: 1fr; } .side { display: none; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#"><i><svg width="18" height="18" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="#0d1526"/></svg></i>VoltTrack</a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#ai">AI plan reading</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" data-app="/signin">Try the demo</a>
+      <a class="btn btn-volt btn-sm" href="#pricing">Start free trial</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div style="padding-bottom:80px">
+      <span class="pill">⚡ Built by electricians, for electrical contractors</span>
+      <h1>Your crew, your hours and your plans — <em>in one app.</em></h1>
+      <p class="lead">VoltTrack tracks every hour on every job site, and reads your electrical plans with AI: upload the PDF and get every light, receptacle, panel and fire alarm device counted by floor and room.</p>
+      <div class="hero-cta">
+        <a class="btn btn-volt" href="#pricing">Start 30-day free trial</a>
+        <a class="btn btn-ghost" data-app="/signin">See the live demo →</a>
+      </div>
+      <div class="trust"><span>No setup fee</span><span>Works on any phone</span><span>Cancel any time</span></div>
+    </div>
+    <div class="mock" aria-hidden="true">
+      <div class="window">
+        <div class="bar"><b></b><b></b><b></b></div>
+        <div class="app">
+          <div class="side"><div></div><div></div><div class="on"></div><div></div><div></div><div></div></div>
+          <div class="main">
+            <h4>Little Falls School No. 1 — BOE Offices</h4>
+            <small>AI plan report · Version 1 · 8 sheets</small>
+            <div class="tabs"><span class="on">Electrical</span><span>Fire Alarm</span><span>Mechanical</span></div>
+            <div class="tiles">
+              <div class="tile"><b>48</b><span>Lights</span></div>
+              <div class="tile"><b>29</b><span>Switches</span></div>
+              <div class="tile"><b>44</b><span>Receptacles</span></div>
+              <div class="tile"><b>32</b><span>Data / LV</span></div>
+              <div class="tile"><b>40</b><span>Equipment</span></div>
+            </div>
+            <div class="rows">
+              <div>Rooms — First floor <i>15</i></div>
+              <div>Panels and circuits <i>4 panels</i></div>
+              <div>Materials to order <i>23 items</i></div>
+              <div>Questions for the engineer (RFI) <i>22</i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="float f1"><span class="dot" style="background:#e8f7ef">⏱</span><div><b>Mike clocked in</b><small>Dunellen HS · 7:02 AM</small></div></div>
+      <div class="float f2"><span class="dot" style="background:#fff6cc">✨</span><div><b>Plan read by AI</b><small>301 devices counted</small></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="logos wrap">Made for electrical contractors who work on schools, offices and commercial jobs.</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker">Everything in one place</div>
+      <h2>Stop chasing paper timesheets and counting symbols by hand</h2>
+      <p class="sub">The office sees what happens on every job site, and your crew uses one simple app on the phone.</p>
+    </div>
+    <div class="features">
+      <div class="feat big" id="ai">
+        <div>
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z"/></svg></div>
+          <h3>AI reads your electrical plans</h3>
+          <p>Upload the drawing set and VoltTrack's AI counts every device by floor and room, lists the panels and circuits, the materials to order, and the questions to ask the engineer. Upload a revision and it tells you what changed.</p>
+        </div>
+        <div class="count">
+          <div><b>48</b><span>Light fixtures</span></div>
+          <div><b>44</b><span>Receptacles</span></div>
+          <div><b>RLP-1</b><span>Panels &amp; circuits</span></div>
+          <div><b>22</b><span>RFI questions</span></div>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Hours that add up</h3>
+        <p>Clock in on the job site or add hours later. Overlaps and double entries are caught before they hit payroll.</p>
+      </div>
+      <div class="feat">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+        <h3>Every job site</h3>
+        <p>Who worked where, how many hours each site took, plus its plans, materials, notes and team chat — together.</p>
+      </div>
+      <div class="feat">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 20h16M7 16V9m5 7V5m5 11v-4"/></svg></div>
+        <h3>Timesheets &amp; reports</h3>
+        <p>Weekly timesheets, overtime alerts and monthly reports ready for payroll in a few clicks.</p>
+      </div>
+      <div class="feat">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg></div>
+        <h3>Daily progress on the plan</h3>
+        <p>Workers mark devices done right on the plan. You see what was done today, by whom and where.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker">How the AI works</div>
+      <h2>From PDF to a full count in minutes</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Upload the plan</h3><p>Drop the PDF drawing set on the job site — from the office or straight from your phone.</p></div>
+      <div class="step"><h3>AI reads every sheet</h3><p>Electrical first, with fire alarm, mechanical and plumbing in their own sections.</p></div>
+      <div class="step"><h3>Your crew gets to work</h3><p>Counts by floor and room, panels, materials and risks — visible to the whole team.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker">Pricing</div>
+      <h2>Simple plans. 30 days free.</h2>
+      <p class="sub">Every plan has all features and unlimited employees. Plans differ only in how many drawing sets the AI reads each month.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <h3>Starter</h3><p class="for">For small crews</p>
+        <div class="price">$49<small> / month</small></div>
+        <div class="reads">30 AI plan reads / month</div>
+        <ul><li>Unlimited employees &amp; job sites</li><li>Hours, timesheets &amp; reports</li><li>AI plan reports &amp; revision compare</li><li>Ask the AI about any plan</li><li>Chat &amp; materials</li></ul>
+        <a class="btn btn-line" data-app="/signin?plan=starter">Start free trial</a>
+      </div>
+      <div class="plan pop">
+        <span class="tag">Most popular</span>
+        <h3>Pro</h3><p class="for">For growing contractors</p>
+        <div class="price">$79<small> / month</small></div>
+        <div class="reads">50 AI plan reads / month</div>
+        <ul><li>Unlimited employees &amp; job sites</li><li>Hours, timesheets &amp; reports</li><li>AI plan reports &amp; revision compare</li><li>Ask the AI about any plan</li><li>Chat &amp; materials</li></ul>
+        <a class="btn btn-volt" data-app="/signin?plan=pro">Start free trial</a>
+      </div>
+      <div class="plan">
+        <h3>Business</h3><p class="for">For busy contractors &amp; big drawing sets</p>
+        <div class="price">$149<small> / month</small></div>
+        <div class="reads">100 AI plan reads / month</div>
+        <ul><li>Unlimited employees &amp; job sites</li><li>Hours, timesheets &amp; reports</li><li>AI plan reports &amp; revision compare</li><li>Ask the AI about any plan</li><li>Chat &amp; materials</li></ul>
+        <a class="btn btn-line" data-app="/signin?plan=business">Start free trial</a>
+      </div>
+    </div>
+    <p class="fine">Secure payment with Stripe. No charge for 30 days — cancel before and you pay nothing.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="center"><div class="kicker">FAQ</div><h2>Questions contractors ask</h2></div>
+    <div class="faq">
+      <details><summary>What counts as one AI plan read?</summary><p>Uploading a drawing set (or a new revision) and letting the AI read it is one read. Opening the report, asking questions and marking work done don't use reads.</p></details>
+      <details><summary>How accurate is the AI count?</summary><p>It reads the plans, legends and schedules the way an estimator does, and lists anything unclear as a question for the engineer. Always double-check counts before you order material or bid.</p></details>
+      <details><summary>Do my workers need to pay?</summary><p>No. One plan covers your whole company — add as many employees as you need.</p></details>
+      <details><summary>Can I cancel any time?</summary><p>Yes. Cancel in Settings → Plan &amp; billing. If you cancel during the 30-day trial, you are never charged.</p></details>
+      <details><summary>Does it work on the phone?</summary><p>Yes. VoltTrack runs in the browser on any iPhone, Android or computer — nothing to install.</p></details>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="cta">
+      <h2>Try it on your next job</h2>
+      <p class="sub">Open the live demo in one click, or start your 30-day free trial.</p>
+      <div class="hero-cta">
+        <a class="btn btn-volt" href="#pricing">Start free trial</a>
+        <a class="btn btn-ghost" data-app="/signin">Open the demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="y"></span> VoltTrack</span>
+    <span><a href="#pricing">Pricing</a> · <a href="#faq">FAQ</a> · <a data-app="/signin">Sign in</a></span>
+  </div>
+</footer>
+
+<script>
+  // Where the app lives. Every [data-app] link goes there.
+  var APP = 'https://darionmitoski20-del.github.io/volttrack';
+  document.querySelectorAll('[data-app]').forEach(function (a) { a.href = APP + a.getAttribute('data-app'); });
+  document.getElementById('y').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
